@@ -9,16 +9,26 @@ import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 import pandas
 
+
+# chromadb for creating database of product descriptions and embeddings
+# embeddings search for RAG chatbot
+# pandas can read csv files
+
 client = genai.Client()
 
 class GeminiEmbeddingFunction(EmbeddingFunction):
     document_mode = True # true = generating embeddings, false = searching for embeddings in database
 
     def __call__(self, input: Documents):
+        # call embedding function within Documents 
+
+        # specifiy type of embedding task
         if self.document_mode:
             embedding_task = 'retrieval_document'
         else:
             embedding_task = 'retrieval_query'
+
+        # models.embed_content reads input and searches for embeddings
 
         response = client.models.embed_content(
 
@@ -31,18 +41,23 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
 
         return [e.values for e in response.embeddings] # list comprehension
 
+# GeminiEmbeddingFunction creates embeddings for documents
+# true = generate embedding, false = query embedding
 embed_function = GeminiEmbeddingFunction()
 embed_function.document_mode = True # generate embedding mode
 
+# .PersistentClient creates persistent database locally
+# .get_or_create_collection creates collection in database
 chroma_client = chromadb.PersistentClient()
 db = chroma_client.get_or_create_collection(name='zoomies_clothes', embedding_function=embed_function)
 
 with open('id_description.csv', 'r') as file:
     clothing_data = pandas.read_csv(file) # read csv using pandas dataframe
     # read id and description columns and turn columnns into lists
-    ids = list(clothing_data.ID)
-    descriptions = list(clothing_data.Description)
+    ids = list(clothing_data.ID) # list of clothing_data IDs
+    descriptions = list(clothing_data.Description)  # list of clothing_data Descriptions
 
+# upsert adds data
 db.upsert(
     ids=ids,
     documents=descriptions,
@@ -54,9 +69,6 @@ query = 'What are the best pants for running in the winter?'
 result = db.query(query_texts=[query], n_results=5)   # how many results to return?
 [all_items] = result['documents']
 print(all_items)
-
-
-
 
 # need to add system prompt to generate content configuration for specific tasks
 # adding a "personality" to the model output
@@ -77,6 +89,8 @@ except:
     print('Missing system instructions, quitting.')
     sys.exit(1)
 
+
+# while loop for prompting user input and generating RAG chatbot
 
 while True:
     

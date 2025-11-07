@@ -4,11 +4,14 @@ from pydantic import BaseModel
 from pprint import pprint
 import os 
 
+# Pydantic model creates a Python class for constructing JSON response structure
+
 class Recipe(BaseModel):
     recipe_name: str 
     ingredients: list[str]
     instructions: list[str]
 
+# initialize client with API key from environment variable
 
 GOOGLE_API_KEY = os.environ.get('GEMINI_API_KEY')
 client = genai.Client(api_key=GOOGLE_API_KEY)
@@ -28,6 +31,9 @@ response = client.models.generate_content(
 recipe = response.parsed  # Pydantic Recipe object 
 print(f'How to make {recipe.recipe_name}')  # Can use fields to access data 
 print('*** You will need these ingredients ***')
+
+# loop over Recipe class fields
+
 for ingredient in recipe.ingredients:
     print(ingredient)
 print('*** And here are the instructions ***')
@@ -37,6 +43,7 @@ for step in recipe.instructions:
 print()
 
 # Or, if you want dictionaries and lists 
+# response.parsed.model_dump() converts Pydantic object to dictionary
 recipe_dictionary = response.parsed.model_dump()
 
 pprint(recipe_dictionary)

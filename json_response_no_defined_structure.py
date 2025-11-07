@@ -8,6 +8,10 @@ response = client.models.generate_content(
     contents="""I have leftover chicken,
     cheese,
     and brocolli. Suggest one recipe?""",
+    
+    # request json response 
+    # GenerateContentConfig specifies response format
+
     config=GenerateContentConfig(
         response_mime_type='application/json'
     )

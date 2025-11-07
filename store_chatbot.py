@@ -11,23 +11,20 @@ chat = client.chats.create(model='gemini-2.5-flash')
 
 try:
     with open('chat_system_instruction.txt', 'r') as f:
+        # open and read system instruction from file
         system_instruction_text = f.read()
 except:
+    # try except error handling
     print('Missing system instructions, quitting.')
-    sys.exit(1)
-
-try:
-    with open('chat_system_instruction.txt', 'r') as f:
-        system_instruction_text = f.read()
-except:
-    print('Missing system instructions, quitting.')
-    sys.exit(1)
+    sys.exit(1) # error code 1 = failure to run program
 
 
 while True:
     question = input('> ')
+    # asks for input from user at > symbol
     response = chat.send_message(
         question,
+        # generate response using system instruction
         config=GenerateContentConfig(
             system_instruction=system_instruction_text
         )
