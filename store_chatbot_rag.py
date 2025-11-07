@@ -79,9 +79,33 @@ except:
 
 
 while True:
+    
     question = input('> ')
+
+    # perform a RAG (retrieval augmented generation) search to find most relevant documents
+    result = db.query(query_texts=[question], n_results=5) # how many results to return?
+    [all_items] = result['documents']
+    print(all_items)
+
+    # Create a prompt that includes the most relevant documents from RAG search
+
+    prompt_with_rag = f"""The user has the following question: 
+    
+    USER_QUESTION: {question}
+
+    Here is information from the product database that may help answer the question:
+    
+    """
+
+    for item in all_items:
+        item_one_line = item.replace('\n', ' ') # replace newlines with spaces
+        prompt_with_rag += f'PRODUCT: {item_one_line}\n' # reads best in one line format
+
+
+    print(prompt_with_rag)
+
     response = chat.send_message(
-        question,
+        prompt_with_rag,
         config=GenerateContentConfig(
             system_instruction=system_instruction_text
         )
